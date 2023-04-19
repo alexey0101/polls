@@ -26,6 +26,11 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     @Override
+    public List<UserResponse> getAllResponsesByUser(String userId, int page, int size) {
+        return userResponseRepository.findAllResponsesByUser(userId, PageRequest.of(page, size));
+    }
+
+    @Override
     public UserResponse getResponseById(Long responseId) {
         return userResponseRepository.findUserResponseById(responseId).orElseThrow(() -> new IllegalArgumentException("Response with given id is not found!"));
     }

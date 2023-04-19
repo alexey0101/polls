@@ -180,6 +180,7 @@ public class PollUtil {
             Sheet sheet = workbook.getSheetAt(0);
 
             pollDto.setName(sheet.getRow(0).getCell(1).getStringCellValue());
+            pollDto.setUserId(sheet.getRow(0).getCell(4).getStringCellValue());
             pollDto.setDescription(sheet.getRow(1).getCell(1).getStringCellValue());
             pollDto.setStartQuestionId((long) sheet.getRow(2).getCell(1).getNumericCellValue());
 

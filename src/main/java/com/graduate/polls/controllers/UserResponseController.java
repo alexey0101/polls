@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/responses")
 @RequiredArgsConstructor
 public class UserResponseController implements SecuredRestController {
 
@@ -30,7 +29,7 @@ public class UserResponseController implements SecuredRestController {
      * @param size
      * @return
      */
-    @GetMapping("/polls/{pollId}")
+    @GetMapping("/api/v1/polls/{pollId}/responses")
     public ResponseEntity<?> getAllPollResponses(@PathVariable Long pollId,
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "10") int size) {
@@ -49,8 +48,8 @@ public class UserResponseController implements SecuredRestController {
      * @param userResponse
      * @return
      */
-    @PostMapping("/polls/{id}")
-    public ResponseEntity<?> submitPoll(@PathVariable Long id, @Valid @RequestBody UserResponseDto userResponse) {
+    @PostMapping("/api/v1/polls/{id}/responses")
+    public ResponseEntity<?> submitResponse(@PathVariable Long id, @Valid @RequestBody UserResponseDto userResponse) {
         try {
             responseService.submitPoll(pollUtil.convertToEntity(userResponse, id));
             return ResponseEntity.ok(Map.of("message", "Poll submitted successfully"));
@@ -67,7 +66,7 @@ public class UserResponseController implements SecuredRestController {
      * @param size
      * @return
      */
-    @GetMapping("/polls/{pollId}/users/{userId}")
+    @GetMapping("/api/v1/polls/{pollId}/responses/users/{userId}")
     public ResponseEntity<?> getAllPollResponsesByUser(@PathVariable Long pollId, @PathVariable String userId,
                                                        @RequestParam(defaultValue = "0") int page,
                                                        @RequestParam(defaultValue = "10") int size) {
@@ -80,12 +79,25 @@ public class UserResponseController implements SecuredRestController {
         }
     }
 
+    @GetMapping("/api/v1/polls/responses/users/{userId}")
+    public ResponseEntity<?> getAllResponsesByUser(@PathVariable String userId,
+                                                   @RequestParam(defaultValue = "0") int page,
+                                                   @RequestParam(defaultValue = "10") int size) {
+        try {
+            Map<String, List<UserResponse>> responses = new HashMap<>();
+            responses.put("responses", responseService.getAllResponsesByUser(userId, page, size));
+            return ResponseEntity.ok().body(responses);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
     /**
      * Get response by id
      * @param responseId
      * @return
      */
-    @GetMapping("/{responseId}")
+    @GetMapping("/api/v1/polls/responses/{responseId}")
     public ResponseEntity<?> getResponseById(@PathVariable Long responseId) {
         try {
             return ResponseEntity.ok().body(responseService.getResponseById(responseId));
@@ -99,7 +111,7 @@ public class UserResponseController implements SecuredRestController {
      * @param responseId
      * @return
      */
-    @DeleteMapping("/{responseId}")
+    @DeleteMapping("/api/v1/polls/responses/{responseId}")
     public ResponseEntity<?> deleteResponseById(@PathVariable Long responseId) {
         try {
             responseService.deleteResponseById(responseId);

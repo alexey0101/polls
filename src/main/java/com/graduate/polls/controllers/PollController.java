@@ -3,6 +3,7 @@ package com.graduate.polls.controllers;
 import com.graduate.polls.models.dto.PollDto;
 import com.graduate.polls.responses.ErrorResponse;
 import com.graduate.polls.service.api.PollService;
+import com.graduate.polls.service.api.StatisticService;
 import com.graduate.polls.utils.PollUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,8 @@ public class PollController implements SecuredRestController {
     private final Logger logger = LoggerFactory.getLogger(PollController.class);
 
     private final PollService pollService;
+
+    private final StatisticService statisticService;
 
     private final PollUtil pollUtil;
 
@@ -125,6 +128,15 @@ public class PollController implements SecuredRestController {
         }
     }
 
+    @GetMapping("/{id}/stats")
+    public ResponseEntity<?> getPollStats(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(statisticService.getPollStatistics(id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
     /**
      * Get question by poll_id and id
      * @param pollId
@@ -139,7 +151,4 @@ public class PollController implements SecuredRestController {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
-
-
-
 }
