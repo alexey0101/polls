@@ -1,12 +1,12 @@
 package com.graduate.polls.exceptions;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import io.jsonwebtoken.JwtException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +21,14 @@ public class ValidationExceptionHandler {
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         Map<String, List<String>> body = new HashMap<>();
         body.put("errors", ex.getBindingResult().getFieldErrors().stream().map(e -> e.getDefaultMessage()).toList());
+
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JsonParseException.class)
+    protected ResponseEntity<Object> handleJsonParseException(JsonParseException ex) {
+        Map<String, String> body = new HashMap<>();
+        body.put("error", ex.getMessage());
 
         return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
     }

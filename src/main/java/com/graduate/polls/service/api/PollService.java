@@ -2,18 +2,20 @@ package com.graduate.polls.service.api;
 
 import com.graduate.polls.models.Poll;
 import com.graduate.polls.models.Question;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface PollService {
     void createPoll(Poll poll);
-
     Poll getPoll(Long pollId) throws Exception;
-
-    List<Poll> getPollsByUser(String userId, int page, int size);
-
+    List<Poll> getPollsByUser(String userId, Pageable pageable);
     Question getQuestion(Long pollId, Long questionId) throws Exception;
+    List<Question> getQuestions(Long pollId);
     void deletePoll(Long pollId);
-
-    List<Poll> getAllPolls(int page, int size);
+    void updatePoll(Poll poll);
+    void setActive(Long pollId, boolean active);
+    List<Poll> getAllPolls(Pageable pageable, String name, List<String> tags, LocalDateTime from, LocalDateTime to);
+    List<Poll> getPollsByName(String name, Pageable pageable);
 }

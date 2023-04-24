@@ -1,8 +1,6 @@
 package com.graduate.polls.models;
 
-import com.ethlo.time.DateTime;
 import com.fasterxml.jackson.annotation.*;
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,7 +9,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -35,6 +32,13 @@ public class Poll implements Serializable {
     @NotNull
     @JsonIgnore
     private App app;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "poll_tag",
+            joinColumns = @JoinColumn(name = "poll_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<Tag> tags = List.of();
 
     @Column
     @JsonProperty("user_id")
@@ -72,6 +76,7 @@ public class Poll implements Serializable {
     @OneToMany(mappedBy = "poll", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @NotNull
+    @JsonIgnore
     private List<Question> questions;
 
     @OneToMany(mappedBy = "poll", cascade = CascadeType.ALL, orphanRemoval = true)

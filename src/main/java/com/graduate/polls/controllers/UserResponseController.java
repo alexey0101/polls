@@ -7,9 +7,12 @@ import com.graduate.polls.service.api.ResponseService;
 import com.graduate.polls.utils.PollUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +35,16 @@ public class UserResponseController implements SecuredRestController {
     @GetMapping("/api/v1/polls/{pollId}/responses")
     public ResponseEntity<?> getAllPollResponses(@PathVariable Long pollId,
                                                  @RequestParam(defaultValue = "0") int page,
-                                                 @RequestParam(defaultValue = "10") int size) {
+                                                 @RequestParam(defaultValue = "10") int size,
+                                                 @RequestParam(defaultValue = "") LocalDateTime from,
+                                                 @RequestParam(defaultValue = "") LocalDateTime to) {
         try {
             Map<String, List<UserResponse>> responses = new HashMap<>();
-            responses.put("responses", responseService.getAllPollResponses(pollId, page, size));
+            responses.put("responses", responseService.getAllPollResponses(pollId, from, to, PageRequest.of(page, size)));
             return ResponseEntity.ok().body(responses);
         } catch (Exception e) {
+            if (e.getMessage().equals("Poll not found"))
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
@@ -72,7 +79,7 @@ public class UserResponseController implements SecuredRestController {
                                                        @RequestParam(defaultValue = "10") int size) {
         try {
             Map<String, List<UserResponse>> responses = new HashMap<>();
-            responses.put("responses", responseService.getAllPollResponsesByUser(pollId, userId, page, size));
+            responses.put("responses", responseService.getAllPollResponsesByUser(pollId, userId, PageRequest.of(page, size)));
             return ResponseEntity.ok().body(responses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
@@ -85,7 +92,7 @@ public class UserResponseController implements SecuredRestController {
                                                    @RequestParam(defaultValue = "10") int size) {
         try {
             Map<String, List<UserResponse>> responses = new HashMap<>();
-            responses.put("responses", responseService.getAllResponsesByUser(userId, page, size));
+            responses.put("responses", responseService.getAllResponsesByUser(userId, PageRequest.of(page, size)));
             return ResponseEntity.ok().body(responses);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));

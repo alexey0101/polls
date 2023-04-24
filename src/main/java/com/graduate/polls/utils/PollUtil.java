@@ -1,12 +1,12 @@
 package com.graduate.polls.utils;
 
-import com.graduate.polls.controllers.PollController;
 import com.graduate.polls.models.*;
 import com.graduate.polls.models.dto.AnswerOptionDto;
 import com.graduate.polls.models.dto.PollDto;
 import com.graduate.polls.models.dto.QuestionDto;
 import com.graduate.polls.models.dto.UserResponseDto;
 import com.graduate.polls.service.api.PollService;
+import com.graduate.polls.service.api.TagService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -16,12 +16,10 @@ import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.xmlbeans.impl.schema.StscChecker;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
@@ -32,6 +30,8 @@ import java.util.*;
 public class PollUtil {
 
     private final PollService pollService;
+
+    private final TagService tagService;
 
     private Map<Long, Question> fillQuestionsMap(List<QuestionDto> questions, Poll parentPoll) {
         Map<Long, Question> questionsMap = new HashMap<>();
@@ -150,6 +150,12 @@ public class PollUtil {
 
         if (!checkQuestionsOrder || visitStatus.containsValue(0)) {
             throw new IllegalArgumentException("Questions order have cycles or not connected");
+        }
+
+        if (pollDto.getTagIds() != null) {
+            for (var tagId : pollDto.getTagIds()) {
+                poll.getTags().add(tagService.getById(tagId));
+            }
         }
 
         return poll;

@@ -19,6 +19,7 @@ import java.io.Serializable;
 @Table(name = "answer_option")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "answer_id")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@NoArgsConstructor
 public class AnswerOption implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -31,4 +31,7 @@ public class PollDto implements Serializable {
     @NotNull(message = "Poll questions cannot be null")
     @Size(min = 1, max = 255, message = "Poll must contain at least one question and no more than 255 questions")
     private List<QuestionDto> questions;
+    @Size(max = 20, message = "Poll tags cannot be longer than 20 tags")
+    @JsonProperty("tag_ids")
+    private List<Long> tagIds;
 }
