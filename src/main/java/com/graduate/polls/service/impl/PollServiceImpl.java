@@ -14,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,19 +85,13 @@ public class PollServiceImpl implements PollService {
     }
 
     @Override
-    public List<Poll> getAllPolls(Pageable pageable, String name, List<String> tags, LocalDateTime from, LocalDateTime to) {
+    public List<Poll> getAllPolls(Pageable pageable, String name, List<String> tags, ZonedDateTime from, ZonedDateTime to) {
         //throw exception if from or to are way to far in the past or future (e.g. 100 years)
         if (from != null && from.getYear() < 1900) {
             throw new IllegalArgumentException("From date is too far in the past!");
         }
         if (to != null && to.getYear() > 9999) {
             throw new IllegalArgumentException("To date is too far in the future!");
-        }
-        if (from == null) {
-            from = LocalDateTime.of(1900, 1, 1, 0, 0);
-        }
-        if (to == null) {
-            to = LocalDateTime.of(9999, 12, 31, 23, 59);
         }
 
         List<Tag> tagList = new ArrayList<>();

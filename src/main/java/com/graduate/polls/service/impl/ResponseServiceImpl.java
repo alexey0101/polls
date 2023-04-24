@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -20,19 +20,13 @@ public class ResponseServiceImpl implements ResponseService {
     private final PollService pollService;
 
     @Override
-    public List<UserResponse> getAllPollResponses(Long pollId, LocalDateTime from, LocalDateTime to, Pageable pageable) throws Exception {
+    public List<UserResponse> getAllPollResponses(Long pollId, ZonedDateTime from, ZonedDateTime to, Pageable pageable) throws Exception {
         pollService.getPoll(pollId);
         if (from != null && from.getYear() < 1900) {
             throw new IllegalArgumentException("From date is too far in the past!");
         }
         if (to != null && to.getYear() > 9999) {
             throw new IllegalArgumentException("To date is too far in the future!");
-        }
-        if (from == null) {
-            from = LocalDateTime.of(1900, 1, 1, 0, 0);
-        }
-        if (to == null) {
-            to = LocalDateTime.of(9999, 12, 31, 23, 59);
         }
         return userResponseRepository.findAllPollResponses(pollId, from, to, pageable);
     }

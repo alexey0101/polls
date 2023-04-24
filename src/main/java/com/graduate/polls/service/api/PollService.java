@@ -4,7 +4,7 @@ import com.graduate.polls.models.Poll;
 import com.graduate.polls.models.Question;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public interface PollService {
@@ -16,6 +16,6 @@ public interface PollService {
     void deletePoll(Long pollId);
     void updatePoll(Poll poll);
     void setActive(Long pollId, boolean active);
-    List<Poll> getAllPolls(Pageable pageable, String name, List<String> tags, LocalDateTime from, LocalDateTime to);
+    List<Poll> getAllPolls(Pageable pageable, String name, List<String> tags, ZonedDateTime from, ZonedDateTime to);
     List<Poll> getPollsByName(String name, Pageable pageable);
 }

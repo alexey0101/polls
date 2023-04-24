@@ -9,13 +9,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface UserResponseRepository extends JpaRepository<UserResponse, Long> {
     @Query("SELECT r FROM UserResponse r JOIN r.poll p WHERE p.id = :pollId AND p.createdAt >= :from AND p.createdAt <= :to AND r.app.id = ?#{principal?.id }")
-    List<UserResponse> findAllPollResponses(@Param("pollId") Long pollId, @Param("from") LocalDateTime from, @Param("to") LocalDateTime to, Pageable pageable);
+    List<UserResponse> findAllPollResponses(@Param("pollId") Long pollId, @Param("from") ZonedDateTime from, @Param("to") ZonedDateTime to, Pageable pageable);
 
     @Query("SELECT r FROM UserResponse r WHERE r.poll.id = ?1 AND r.userId = ?2 AND r.poll.app.id= ?#{principal?.id }")
     List<UserResponse> findAllPollResponsesByUser(Long pollId, String userId, Pageable pageable);

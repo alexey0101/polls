@@ -20,8 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 
 @RestController
@@ -84,11 +88,13 @@ public class PollController implements SecuredRestController {
     public ResponseEntity<?> getAllPolls(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "10") int size,
                                          @RequestParam(defaultValue = "") String name,
-                                         @RequestParam(defaultValue = "") LocalDateTime from,
-                                         @RequestParam(defaultValue = "") LocalDateTime to,
+                                         @RequestParam(defaultValue = "2000-01-01T00:00:00") String from,
+                                         @RequestParam(defaultValue = "9999-01-01T00:00:00") String to,
                                          @RequestParam(defaultValue = "") List<String> tags) {
         try {
-            return ResponseEntity.ok(Map.of("polls", (pollService.getAllPolls(PageRequest.of(page, size), name, tags, from, to))));
+            ZonedDateTime utcDateTimeFrom = LocalDateTime.parse(from, ISO_LOCAL_DATE_TIME).atZone(ZoneOffset.UTC);
+            ZonedDateTime utcDateTimeTo = LocalDateTime.parse(to, ISO_LOCAL_DATE_TIME).atZone(ZoneOffset.UTC);
+            return ResponseEntity.ok(Map.of("polls", (pollService.getAllPolls(PageRequest.of(page, size), name, tags, utcDateTimeFrom, utcDateTimeTo))));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }

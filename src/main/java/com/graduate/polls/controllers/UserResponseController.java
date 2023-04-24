@@ -13,9 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,11 +40,13 @@ public class UserResponseController implements SecuredRestController {
     public ResponseEntity<?> getAllPollResponses(@PathVariable Long pollId,
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "10") int size,
-                                                 @RequestParam(defaultValue = "") LocalDateTime from,
-                                                 @RequestParam(defaultValue = "") LocalDateTime to) {
+                                                 @RequestParam(defaultValue = "2000-01-01T00:00:00") String from,
+                                                 @RequestParam(defaultValue = "9999-01-01T00:00:00") String to) {
         try {
+            ZonedDateTime utcDateTimeFrom = LocalDateTime.parse(from, ISO_LOCAL_DATE_TIME).atZone(ZoneOffset.UTC);
+            ZonedDateTime utcDateTimeTo = LocalDateTime.parse(to, ISO_LOCAL_DATE_TIME).atZone(ZoneOffset.UTC);
             Map<String, List<UserResponse>> responses = new HashMap<>();
-            responses.put("responses", responseService.getAllPollResponses(pollId, from, to, PageRequest.of(page, size)));
+            responses.put("responses", responseService.getAllPollResponses(pollId, utcDateTimeFrom, utcDateTimeTo, PageRequest.of(page, size)));
             return ResponseEntity.ok().body(responses);
         } catch (Exception e) {
             if (e.getMessage().equals("Poll not found"))

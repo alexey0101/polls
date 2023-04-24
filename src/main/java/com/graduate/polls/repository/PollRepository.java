@@ -10,16 +10,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
 public interface PollRepository extends JpaRepository<Poll, Long> {
 
     @Query(value = "SELECT p FROM Poll p JOIN p.tags t WHERE t IN :tags AND LOWER(p.name) LIKE CONCAT('%', :name, '%') AND p.createdAt >= :fromDate AND p.createdAt <= :toDate AND p.app.id = ?#{principal?.id }")
-    Page<Poll> findAll(@Param("name") String name, @Param("tags") List<Tag> tags, @Param("fromDate") LocalDateTime from, @Param("toDate") LocalDateTime to, Pageable pageable);
+    Page<Poll> findAll(@Param("name") String name, @Param("tags") List<Tag> tags, @Param("fromDate") ZonedDateTime from, @Param("toDate") ZonedDateTime to, Pageable pageable);
     @Query(value = "SELECT p FROM Poll p WHERE LOWER(p.name) LIKE CONCAT('%', :name, '%') AND p.createdAt >= :fromDate AND p.createdAt <= :toDate AND p.app.id = ?#{principal?.id }")
-    Page<Poll> findAll(@Param("name") String name, @Param("fromDate") LocalDateTime from, @Param("toDate") LocalDateTime to, Pageable pageable);
+    Page<Poll> findAll(@Param("name") String name, @Param("fromDate") ZonedDateTime from, @Param("toDate") ZonedDateTime to, Pageable pageable);
 
     @Query(value = "SELECT p FROM Poll p WHERE LOWER(p.name) LIKE CONCAT('%', ?1, '%') AND p.app.id = ?#{principal?.id }")
     Page<Poll> findByNameContainingIgnoreCase(String name, Pageable pageable);

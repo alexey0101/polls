@@ -11,7 +11,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Data
@@ -59,7 +59,8 @@ public class Poll implements Serializable {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @JsonProperty("created_at")
-    private LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
+    private ZonedDateTime createdAt;
 
     @Column
     @NotNull
