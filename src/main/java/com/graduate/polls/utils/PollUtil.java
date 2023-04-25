@@ -255,7 +255,7 @@ public class PollUtil {
             userAnswer.setAnswerOption(question.getAnswers().stream()
                     .filter(answerOption -> answerOption.getId().equals(userAnswerDto.getAnswerId()))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Answer " + userAnswerDto.getAnswerId() + " is not found")));
+                    .orElseThrow(() -> new IllegalArgumentException("Answer not found")));
 
             userAnswers.add(userAnswer);
         }

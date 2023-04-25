@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface ResponseService {
     List<UserResponse> getAllPollResponses(Long pollId, ZonedDateTime from, ZonedDateTime to, Pageable pageable) throws Exception;
-    List<UserResponse> getAllPollResponsesByUser(Long pollId, String userId, Pageable pageable);
+    List<UserResponse> getAllPollResponsesByUser(Long pollId, String userId, Pageable pageable) throws Exception;
 
     List<UserResponse> getAllResponsesByUser(String userId, Pageable pageable);
     UserResponse getResponseById(Long responseId);

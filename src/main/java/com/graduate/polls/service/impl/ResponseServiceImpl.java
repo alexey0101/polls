@@ -32,7 +32,8 @@ public class ResponseServiceImpl implements ResponseService {
     }
 
     @Override
-    public List<UserResponse> getAllPollResponsesByUser(Long pollId, String userId, Pageable pageable) {
+    public List<UserResponse> getAllPollResponsesByUser(Long pollId, String userId, Pageable pageable) throws Exception {
+        pollService.getPoll(pollId);
         return userResponseRepository.findAllPollResponsesByUser(pollId, userId, pageable);
     }
 

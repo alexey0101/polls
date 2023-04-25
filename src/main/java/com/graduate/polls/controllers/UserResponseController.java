@@ -67,6 +67,8 @@ public class UserResponseController implements SecuredRestController {
             responseService.submitPoll(pollUtil.convertToEntity(userResponse, id));
             return ResponseEntity.ok(Map.of("message", "Poll submitted successfully"));
         } catch (Exception e) {
+            if (e.getMessage().equals("Poll not found") || e.getMessage().equals("Question not found") || e.getMessage().equals("Answer not found"))
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
@@ -88,6 +90,8 @@ public class UserResponseController implements SecuredRestController {
             responses.put("responses", responseService.getAllPollResponsesByUser(pollId, userId, PageRequest.of(page, size)));
             return ResponseEntity.ok().body(responses);
         } catch (Exception e) {
+            if (e.getMessage().equals("Poll not found"))
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
             return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
         }
     }
@@ -115,7 +119,7 @@ public class UserResponseController implements SecuredRestController {
         try {
             return ResponseEntity.ok().body(responseService.getResponseById(responseId));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
         }
     }
 
@@ -130,7 +134,7 @@ public class UserResponseController implements SecuredRestController {
             responseService.deleteResponseById(responseId);
             return ResponseEntity.ok().body(Map.of("message", "Response deleted successfully"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(e.getMessage()));
         }
     }
 }
