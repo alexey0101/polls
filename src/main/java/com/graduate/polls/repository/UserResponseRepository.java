@@ -38,7 +38,7 @@ public interface UserResponseRepository extends JpaRepository<UserResponse, Long
             " AVG(user_answer.scale_value) as scale_mean, STDDEV(user_answer.scale_value) as scale_std," +
             " MODE() WITHIN GROUP (ORDER BY scale_value) as scale_mode, " +
             " PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY scale_value) as scale_median FROM user_response " +
-            " JOIN user_answer ON user_response.id = user_answer.response_id WHERE user_response.app_id = 1" +
+            " JOIN user_answer ON user_response.id = user_answer.response_id WHERE user_response.app_id = ?#{principal?.id }" +
             " AND user_response.poll_id = ?1 GROUP BY user_answer.question_id ORDER BY user_answer.question_id ASC")
     List<Tuple> calcAnswerStatistic(Long pollId);
 
@@ -48,6 +48,6 @@ public interface UserResponseRepository extends JpaRepository<UserResponse, Long
     List<Tuple> calcAnswerOptionStatistic(Long pollId, Long questionId);
 
     @Query(nativeQuery = true, value = "SELECT COUNT(*) FROM (SELECT COUNT(*) FROM user_answer JOIN user_response on user_response.id = user_answer.response_id" +
-            " WHERE user_response.poll_id = ?1 AND user_answer.question_id = ?2 AND user_response.app_id = 1 GROUP BY user_answer.response_id) t")
+            " WHERE user_response.poll_id = ?1 AND user_answer.question_id = ?2 AND user_response.app_id = ?#{principal?.id } GROUP BY user_answer.response_id) t")
     Long countMultipleChoiceResponsesByResponseIdAndQuestionId(Long pollId, Long questionId);
 }
