@@ -38,6 +38,7 @@ public class UserResponse implements Serializable {
     @JoinColumn(name = "app_id")
     @JsonProperty("app_id")
     @JsonIdentityReference(alwaysAsId = true)
+    @JsonIgnore
     private App app;
 
     @Column(name = "user_id")
@@ -48,6 +49,7 @@ public class UserResponse implements Serializable {
     @CreationTimestamp
     @Temporal(TemporalType.TIMESTAMP)
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "UTC")
+    @JsonProperty("created_at")
     private ZonedDateTime createdAt;
 
     @OneToMany(mappedBy = "userResponse", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -42,8 +42,8 @@ public class AnswerOption implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "next_question_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @NotNull
     @JsonIdentityReference(alwaysAsId = true)
     @JsonProperty("next_question_id")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Question nextQuestion;
 }

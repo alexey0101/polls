@@ -27,7 +27,9 @@ import java.util.Map;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-
+/**
+ * Poll controller
+ */
 @RestController
 @RequestMapping("/api/v1/polls")
 @RequiredArgsConstructor
@@ -63,7 +65,7 @@ public class PollController implements SecuredRestController {
     @PostMapping(value = "/excel")
     public ResponseEntity<?> createPollFromExcel(@RequestParam("file") MultipartFile file) throws MethodArgumentNotValidException {
         try {
-            if (!file.getName().contains(".xls")) {
+            if (!file.getOriginalFilename().contains(".xls")) {
                 throw new IllegalArgumentException("Excel file is not valid!");
             }
             InputStream inputStream = file.getInputStream();
@@ -100,6 +102,13 @@ public class PollController implements SecuredRestController {
         }
     }
 
+    /**
+     * Get all polls by user id
+     * @param userId
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/users/{userId}")
     public ResponseEntity<?> getAllPollsByUserId(@PathVariable String userId,
                                                  @RequestParam(defaultValue = "0") int page,
@@ -141,6 +150,11 @@ public class PollController implements SecuredRestController {
         }
     }
 
+    /**
+     * Get poll statistics by id
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}/stats")
     public ResponseEntity<?> getPollStats(@PathVariable Long id) {
         try {
@@ -153,7 +167,12 @@ public class PollController implements SecuredRestController {
         }
     }
 
-    ///
+    /**
+     * Set poll active/inactive
+     * @param active
+     * @param id
+     * @return
+     */
     @PatchMapping("/{id}")
     public ResponseEntity<?> setActive(@RequestParam boolean active, @PathVariable Long id) {
         try {
@@ -167,6 +186,11 @@ public class PollController implements SecuredRestController {
         }
     }
 
+    /**
+     * Get poll statistics by id in xlsx format
+     * @param id
+     * @return
+     */
     @GetMapping("/{id}/stats/excel")
     public ResponseEntity<?> getPollExcelStats(@PathVariable Long id) {
         try {
@@ -200,6 +224,11 @@ public class PollController implements SecuredRestController {
         }
     }
 
+    /**
+     * Get all questions by poll_id
+     * @param pollId
+     * @return
+     */
     @GetMapping("/{pollId}/questions")
     public ResponseEntity<?> getQuestions(@PathVariable Long pollId) {
         try {

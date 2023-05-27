@@ -34,13 +34,20 @@ public interface UserResponseRepository extends JpaRepository<UserResponse, Long
     @Query(nativeQuery = true, value = "SELECT COUNT(*) FROM user_response WHERE app_id = ?#{principal?.id } AND poll_id = ?1")
     Long countByPollId(Long pollId);
 
-    @Query(nativeQuery = true, value = "SELECT question.id as id, question.question_id as question_id, question.question_text as question_text, COUNT(*) as response_number " +
-            "FROM user_response JOIN user_answer ON user_response.id = user_answer.response_id JOIN question ON user_answer.question_id = question.id " +
-            "WHERE user_response.app_id = ?#{principal?.id } AND user_response.poll_id = ?1 GROUP BY question.id")
-    List<Tuple> countQuestionResponses(Long pollId);
+    @Query(nativeQuery = true, value = "SELECT user_answer.question_id as question_id, COUNT(*) as response_number," +
+            " AVG(user_answer.scale_value) as scale_mean, STDDEV(user_answer.scale_value) as scale_std," +
+            " MODE() WITHIN GROUP (ORDER BY scale_value) as scale_mode, " +
+            " PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY scale_value) as scale_median FROM user_response " +
+            " JOIN user_answer ON user_response.id = user_answer.response_id WHERE user_response.app_id = 1" +
+            " AND user_response.poll_id = ?1 GROUP BY user_answer.question_id ORDER BY user_answer.question_id ASC")
+    List<Tuple> calcAnswerStatistic(Long pollId);
 
     @Query(nativeQuery = true, value = "SELECT answer_option.id as id, answer_option.answer_text as answer_text, COUNT(*) as response_number" +
             " FROM user_response JOIN user_answer ON user_response.id = user_answer.response_id JOIN answer_option ON user_answer.answer_option_id = answer_option.id " +
             "WHERE user_response.app_id = ?#{principal?.id } AND user_response.poll_id = ?1 AND user_answer.question_id = ?2 GROUP BY answer_option.id")
-    List<Tuple> countAnswerResponses(Long pollId, Long questionId);
+    List<Tuple> calcAnswerOptionStatistic(Long pollId, Long questionId);
+
+    @Query(nativeQuery = true, value = "SELECT COUNT(*) FROM (SELECT COUNT(*) FROM user_answer JOIN user_response on user_response.id = user_answer.response_id" +
+            " WHERE user_response.poll_id = ?1 AND user_answer.question_id = ?2 AND user_response.app_id = 1 GROUP BY user_answer.response_id) t")
+    Long countMultipleChoiceResponsesByResponseIdAndQuestionId(Long pollId, Long questionId);
 }

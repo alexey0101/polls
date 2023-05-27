@@ -13,8 +13,11 @@ public class UserAnswerDto implements Serializable {
     @Positive(message = "questionId must be positive")
     @JsonProperty("question_id")
     private Long questionId;
-    @NotNull(message = "answerId cannot be null")
     @Positive(message = "answerId must be positive")
     @JsonProperty("answer_id")
     private Long answerId;
+    @JsonProperty("answer_text")
+    private String answerText;
+    @JsonProperty("scale_value")
+    private Long scaleValue;
 }

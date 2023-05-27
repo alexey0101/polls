@@ -21,6 +21,9 @@ import java.util.Map;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
+/**
+ * User response controller
+ */
 @RestController
 @RequiredArgsConstructor
 public class UserResponseController implements SecuredRestController {
@@ -96,6 +99,13 @@ public class UserResponseController implements SecuredRestController {
         }
     }
 
+    /**
+     * Get all responses by a user
+     * @param userId
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/api/v1/polls/responses/users/{userId}")
     public ResponseEntity<?> getAllResponsesByUser(@PathVariable String userId,
                                                    @RequestParam(defaultValue = "0") int page,

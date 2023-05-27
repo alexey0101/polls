@@ -16,6 +16,8 @@
     <properties>
         <java.version>19</java.version>
         <hibernate.version>6.2.0.Final</hibernate.version>
+        <maven.compiler.target>1.19</maven.compiler.target>
+        <maven.compiler.source>1.19</maven.compiler.source>
     </properties>
     <dependencies>
         <dependency>

@@ -12,6 +12,7 @@ public interface PollService {
     Poll getPoll(Long pollId) throws Exception;
     List<Poll> getPollsByUser(String userId, Pageable pageable);
     Question getQuestion(Long pollId, Long questionId) throws Exception;
+    Question getQuestion(Long id) throws Exception;
     List<Question> getQuestions(Long pollId);
     void deletePoll(Long pollId);
     void updatePoll(Poll poll);

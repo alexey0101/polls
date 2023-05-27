@@ -50,7 +50,12 @@ public class PollServiceImpl implements PollService {
         if (pollRepository.findById(pollId).isEmpty()) {
             throw new IllegalArgumentException("There is no poll with such id!");
         }
-        return questionRepository.findByIdAndPollId(questionId, pollId).orElseThrow(() -> new Exception("Question not found"));
+        return questionRepository.findByQuestionIdIdAndPollId(questionId, pollId).orElseThrow(() -> new Exception("Question not found"));
+    }
+
+    @Override
+    public Question getQuestion(Long id) throws Exception {
+        return questionRepository.findById(id).orElseThrow(() -> new Exception("Question not found"));
     }
 
     @Override

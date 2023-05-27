@@ -25,6 +25,7 @@ public class Tag {
     @JoinColumn(name = "app_id")
     @JsonIdentityReference(alwaysAsId = true)
     @JsonProperty("app_id")
+    @JsonIgnore
     private App app;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "tags")

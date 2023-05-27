@@ -16,11 +16,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Tag controller
+ */
 @RestController
 @RequiredArgsConstructor
 public class TagController implements SecuredRestController {
     private final TagService tagService;
 
+    /**
+     * Create new tag
+     * @param tagDto
+     * @return
+     */
     @PostMapping("/api/v1/polls/tags")
     public ResponseEntity<?> createTag(@Valid @RequestBody TagDto tagDto) {
         try {
@@ -33,6 +41,12 @@ public class TagController implements SecuredRestController {
         }
     }
 
+    /**
+     * Get all tags
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/api/v1/polls/tags")
     public ResponseEntity<?> getAllTags(@RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "10") int size) {
@@ -43,6 +57,11 @@ public class TagController implements SecuredRestController {
         }
     }
 
+    /**
+     * Delete tag by id
+     * @param id
+     * @return
+     */
     @DeleteMapping("/api/v1/polls/tags/{id}")
     public ResponseEntity<?> deleteTag(@PathVariable Long id) {
         try {
@@ -55,6 +74,12 @@ public class TagController implements SecuredRestController {
         }
     }
 
+    /**
+     * Add tags to poll
+     * @param pollId
+     * @param tagsDto
+     * @return
+     */
     @PostMapping("/api/v1/polls/{pollId}/tags")
     public ResponseEntity<?> addTagsToPoll(@PathVariable Long pollId, @Valid @RequestBody TagsDto tagsDto) {
         try {
@@ -67,6 +92,13 @@ public class TagController implements SecuredRestController {
         }
     }
 
+    /**
+     * Get all tags by poll id
+     * @param pollId
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/api/v1/polls/{pollId}/tags")
     public ResponseEntity<?> getPollTags(@PathVariable Long pollId,
                                          @RequestParam(defaultValue = "0") int page,
@@ -80,6 +112,12 @@ public class TagController implements SecuredRestController {
         }
     }
 
+    /**
+     * Remove tag from poll
+     * @param pollId
+     * @param tagId
+     * @return
+     */
     @DeleteMapping("/api/v1/polls/{pollId}/tags/{tagId}")
     public ResponseEntity<?> removeTagFromPoll(@PathVariable Long pollId, @PathVariable Long tagId) {
         try {

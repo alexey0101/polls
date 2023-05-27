@@ -20,6 +20,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
+
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
         var user = App.builder()

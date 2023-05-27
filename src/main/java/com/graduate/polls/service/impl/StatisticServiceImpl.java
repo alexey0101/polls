@@ -3,45 +3,64 @@ package com.graduate.polls.service.impl;
 import com.graduate.polls.models.*;
 import com.graduate.polls.repository.UserResponseRepository;
 import com.graduate.polls.service.api.PollService;
-import com.graduate.polls.service.api.ResponseService;
 import com.graduate.polls.service.api.StatisticService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class StatisticServiceImpl implements StatisticService {
     private final UserResponseRepository userResponseRepository;
-    private final ResponseService responseService;
-
     private final PollService pollService;
 
+    /**
+     * Get poll statistics
+     * @param pollId
+     * @return
+     * @throws Exception
+     */
     @Override
     public PollStatistic getPollStatistics(Long pollId) throws Exception {
-        pollService.getPoll(pollId);
+        Poll poll = pollService.getPoll(pollId);
         PollStatistic pollStatistic = new PollStatistic();
         pollStatistic.setTotalResponses(userResponseRepository.countByPollId(pollId));
 
         List<QuestionStatistic> questionStatistics = new ArrayList<>();
 
-        for (var question : userResponseRepository.countQuestionResponses(pollId)) {
+        for (var question : userResponseRepository.calcAnswerStatistic(pollId)) {
             QuestionStatistic questionStatistic = new QuestionStatistic();
+            Question questionEntity = pollService.getQuestion(question.get("question_id", Long.class));
 
-            questionStatistic.setQuestionId(question.get("question_id", Long.class));
-            questionStatistic.setQuestionText(question.get("question_text", String.class));
-            questionStatistic.setTotalResponses(question.get("response_number", Long.class));
+            questionStatistic.setQuestionType(questionEntity.getQuestionType());
+            questionStatistic.setQuestionId(questionEntity.getQuestionId());
+            questionStatistic.setQuestionText(questionEntity.getQuestionText());
+
+            if (questionEntity.getQuestionType() == QuestionType.MULTIPLE_CHOICE) {
+                questionStatistic.setTotalResponses(userResponseRepository.countMultipleChoiceResponsesByResponseIdAndQuestionId(pollId, questionEntity.getId()));
+            } else {
+                questionStatistic.setTotalResponses(question.get("response_number", Long.class));
+            }
+
+            if (questionEntity.getQuestionType() == QuestionType.SCALE) {
+                questionStatistic.setScaleMean(question.get("scale_mean", BigDecimal.class));
+                questionStatistic.setScaleMode(question.get("scale_mode", Long.class));
+                questionStatistic.setScaleMedian(question.get("scale_median", Double.class));
+                questionStatistic.setScaleStd(question.get("scale_std", BigDecimal.class));
+            }
+
             questionStatistic.setPercentage(questionStatistic.getTotalResponses() / (double) pollStatistic.getTotalResponses() * 100);
 
             List<AnswerStatistic> answerStatistics = new ArrayList<>();
 
-            for (var answer : userResponseRepository.countAnswerResponses(pollId, question.get("id", Long.class))) {
+            for (var answer : userResponseRepository.calcAnswerOptionStatistic(pollId, questionEntity.getId())) {
                 AnswerStatistic answerStatistic = new AnswerStatistic();
 
                 answerStatistic.setAnswerId(answer.get("id", Long.class));
@@ -61,6 +80,12 @@ public class StatisticServiceImpl implements StatisticService {
         return pollStatistic;
     }
 
+    /**
+     * Create poll report
+     * @param pollId
+     * @return
+     * @throws Exception
+     */
     @Override
     public byte[] createPollReport(Long pollId) throws Exception {
         Poll poll = pollService.getPoll(pollId);
@@ -78,6 +103,12 @@ public class StatisticServiceImpl implements StatisticService {
         return outputStream.toByteArray();
     }
 
+    /**
+     * Create poll xlsx sheet
+     * @param workbook
+     * @param poll
+     * @param pollStatistic
+     */
     private void createPollSheet(Workbook workbook, Poll poll, PollStatistic pollStatistic) {
         Sheet sheet = workbook.createSheet("Опрос");
 
@@ -105,9 +136,15 @@ public class StatisticServiceImpl implements StatisticService {
         sheet.autoSizeColumn(0);
     }
 
+    /**
+     * Create question xlsx sheet
+     * @param workbook
+     * @param poll
+     */
     private void createQuestionSheets(Workbook workbook, Poll poll, PollStatistic pollStatistic) {
         for (QuestionStatistic questionStatistic : pollStatistic.getQuestions()) {
             Sheet sheet = workbook.createSheet("Вопрос " + questionStatistic.getQuestionId());
+
 
             Font font = workbook.createFont();
             font.setBold(true);
@@ -120,49 +157,89 @@ public class StatisticServiceImpl implements StatisticService {
             idCell.setCellStyle(style);
             sheet.getRow(0).createCell(1).setCellValue(questionStatistic.getQuestionId());
 
-            Cell titleCell = sheet.createRow(1).createCell(0);
+            Cell typeCell = sheet.createRow(1).createCell(0);
+            typeCell.setCellValue("Тип вопроса");
+            typeCell.setCellStyle(style);
+            if (questionStatistic.getQuestionType().equals(QuestionType.MULTIPLE_CHOICE)) {
+                sheet.getRow(1).createCell(1).setCellValue("Множественный выбор");
+            } else if (questionStatistic.getQuestionType().equals(QuestionType.SINGLE_CHOICE)) {
+                sheet.getRow(1).createCell(1).setCellValue("Единственный выбор");
+            } else if (questionStatistic.getQuestionType().equals(QuestionType.SCALE)) {
+                sheet.getRow(1).createCell(1).setCellValue("Шкала");
+            } else {
+                sheet.getRow(1).createCell(1).setCellValue("Открытый");
+            }
+
+            Cell titleCell = sheet.createRow(2).createCell(0);
             titleCell.setCellValue("Текст вопроса");
             titleCell.setCellStyle(style);
-            sheet.getRow(1).createCell(1).setCellValue(questionStatistic.getQuestionText());
+            sheet.getRow(2).createCell(1).setCellValue(questionStatistic.getQuestionText());
 
-            Cell responseNumberCell = sheet.createRow(2).createCell(0);
+            Cell responseNumberCell = sheet.createRow(3).createCell(0);
             responseNumberCell.setCellValue("Количество ответов");
             responseNumberCell.setCellStyle(style);
-            sheet.getRow(2).createCell(1).setCellValue(questionStatistic.getTotalResponses());
+            sheet.getRow(3).createCell(1).setCellValue(questionStatistic.getTotalResponses());
 
-            Cell percentageCell = sheet.createRow(3).createCell(0);
+            Cell percentageCell = sheet.createRow(4).createCell(0);
             percentageCell.setCellValue("Процент ответов");
             percentageCell.setCellStyle(style);
-            sheet.getRow(3).createCell(1).setCellValue(questionStatistic.getPercentage());
-
-            sheet.getRow(1).createCell(2).setCellValue("Количество ответов");
-            sheet.getRow(1).getCell(2).setCellStyle(style);
-
-            sheet.getRow(2).createCell(2).setCellValue("Распределение в %");
-            sheet.getRow(2).getCell(2).setCellStyle(style);
+            sheet.getRow(4).createCell(1).setCellValue(questionStatistic.getPercentage());
 
             sheet.autoSizeColumn(0);
             sheet.autoSizeColumn(1);
-            sheet.autoSizeColumn(2);
 
-            int i = 3;
-            for (AnswerStatistic answerStatistic : questionStatistic.getAnswers()) {
-                Row answerRow = sheet.getRow(0);
-                Row responseRow = sheet.getRow(1);
-                Row percentageRow = sheet.getRow(2);
+            if (questionStatistic.getQuestionType().equals(QuestionType.MULTIPLE_CHOICE) ||
+                    questionStatistic.getQuestionType().equals(QuestionType.SINGLE_CHOICE)) {
+                sheet.createRow(7).createCell(0).setCellValue("Количество ответов");
+                sheet.getRow(7).getCell(0).setCellStyle(style);
 
-                answerRow.createCell(i).setCellValue(answerStatistic.getAnswerText());
-                answerRow.getCell(i).setCellStyle(style);
+                sheet.createRow(8).createCell(0).setCellValue("Распределение в %");
+                sheet.getRow(8).getCell(0).setCellStyle(style);
 
-                responseRow.createCell(i).setCellValue(answerStatistic.getTotalResponses());
-                percentageRow.createCell(i).setCellValue(answerStatistic.getPercentage());
-                sheet.autoSizeColumn(i);
+                sheet.createRow(6);
 
-                i++;
+                int i = 1;
+                for (AnswerStatistic answerStatistic : questionStatistic.getAnswers()) {
+                    sheet.getRow(6).createCell(i).setCellValue(answerStatistic.getAnswerText());
+                    sheet.getRow(6).getCell(i).setCellStyle(style);
+
+                    sheet.getRow(7).createCell(i).setCellValue(answerStatistic.getTotalResponses());
+                    sheet.getRow(8).createCell(i).setCellValue(answerStatistic.getPercentage());
+
+                    sheet.autoSizeColumn(i);
+                    i++;
+                }
+
+            } else if (questionStatistic.getQuestionType().equals(QuestionType.SCALE)) {
+                sheet.createRow(6).createCell(0).setCellValue("Среднее значение");
+                sheet.getRow(6).getCell(0).setCellStyle(style);
+                sheet.getRow(6).createCell(1).setCellValue(questionStatistic.getScaleMean().doubleValue());
+
+                sheet.createRow(7).createCell(0).setCellValue("Мода");
+                sheet.getRow(7).getCell(0).setCellStyle(style);
+                sheet.getRow(7).createCell(1).setCellValue(questionStatistic.getScaleMode().doubleValue());
+
+                sheet.createRow(8).createCell(0).setCellValue("Медиана");
+                sheet.getRow(8).getCell(0).setCellStyle(style);
+                sheet.getRow(8).createCell(1).setCellValue(questionStatistic.getScaleMedian());
+
+                sheet.createRow(9).createCell(0).setCellValue("Стандартное отклонение");
+                if (questionStatistic.getScaleStd() != null) {
+                    sheet.getRow(9).getCell(0).setCellStyle(style);
+                    sheet.getRow(9).createCell(1).setCellValue(questionStatistic.getScaleStd().doubleValue());
+                }
+
+                sheet.autoSizeColumn(0);
+                sheet.autoSizeColumn(1);
             }
         }
     }
 
+    /**
+     * Creates sheet with responses of users
+     * @param workbook
+     * @param poll
+     */
     private void createResponseSheet(Workbook workbook, Poll poll) {
         Sheet sheet = workbook.createSheet("Ответы пользователей");
 
@@ -198,12 +275,23 @@ public class StatisticServiceImpl implements StatisticService {
             int j = 3;
             for (var question : poll.getQuestions()) {
                 final int finalJ = j;
-                response.getAnswers().stream()
-                        .filter(answer -> answer.getQuestion().getQuestionId().equals(question.getQuestionId()))
-                        .findFirst()
-                        .ifPresent(
-                                answer -> responseRow.createCell(finalJ).setCellValue(answer.getAnswerOption().getAnswerText())
-                        );
+                if (!question.getQuestionType().equals(QuestionType.MULTIPLE_CHOICE)) {
+                    UserAnswer userAnswer = response.getAnswers().stream()
+                            .filter(answer -> answer.getQuestion().getQuestionId().equals(question.getQuestionId()))
+                            .findFirst().get();
+
+                    if (userAnswer.getQuestion().getQuestionType().equals(QuestionType.SCALE)) {
+                        responseRow.createCell(finalJ).setCellValue(userAnswer.getScaleValue());
+                    } else if (userAnswer.getQuestion().getQuestionType().equals(QuestionType.TEXT)){
+                        responseRow.createCell(finalJ).setCellValue(userAnswer.getAnswerText());
+                    } else {
+                        responseRow.createCell(finalJ).setCellValue(userAnswer.getAnswerOption().getAnswerText());
+                    }
+                } else {
+                    List<UserAnswer> userAnswer = response.getAnswers().stream()
+                            .filter(answer -> answer.getQuestion().getQuestionId().equals(question.getQuestionId())).toList();
+                    responseRow.createCell(finalJ).setCellValue(userAnswer.stream().map(answer -> answer.getAnswerOption().getAnswerText()).collect(Collectors.joining(";")));
+                }
                 j++;
             }
             i++;

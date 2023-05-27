@@ -6,6 +6,9 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * This class is used to configure the OpenAPI 3.0 documentation.
+ */
 @Configuration
 @OpenAPIDefinition(info = @Info(title = "Polls API", version = "v1"))
 @SecurityScheme(
