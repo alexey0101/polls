@@ -278,8 +278,12 @@ public class StatisticServiceImpl implements StatisticService {
                 if (!question.getQuestionType().equals(QuestionType.MULTIPLE_CHOICE)) {
                     UserAnswer userAnswer = response.getAnswers().stream()
                             .filter(answer -> answer.getQuestion().getQuestionId().equals(question.getQuestionId()))
-                            .findFirst().get();
-
+                            .findFirst().orElse(null);
+                    if (userAnswer == null) {
+                        responseRow.createCell(finalJ).setCellValue("");
+                        j++;
+                        continue;
+                    }
                     if (userAnswer.getQuestion().getQuestionType().equals(QuestionType.SCALE)) {
                         responseRow.createCell(finalJ).setCellValue(userAnswer.getScaleValue());
                     } else if (userAnswer.getQuestion().getQuestionType().equals(QuestionType.TEXT)){
